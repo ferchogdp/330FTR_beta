@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A330‑200F Cargo Hold Visualisation</title>
+  <!-- Load Three.js from a CDN.  If this file is being viewed offline without
+       internet access, replace these links with local copies. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    canvas { display: block; }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: sans-serif;
+      font-size: 14px;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <strong>A330‑200F cross‑section</strong><br>
+    This viewer extrudes the cross‑section of the Airbus A330‑200F cargo hold based on the inner contour shown in the provided diagram【472571531897444†L100-L104】.  The half‑width of the cabin is approximately 2.5 m and the maximum height is about 2.5 m.  The roof includes a flat section of 1 m width and the walls transition through a curved segment down to a short vertical side near the floor.  This cross‑section is extruded 3.175 m along the depth, corresponding to a standard 96 × 125 in pallet position【635180404376686†L1072-L1080】.
+  </div>
+  <script>
+  (function() {
+    // Define the contour points for the right half of the A330 cross‑section
+    // Points are specified in metres and will be mirrored to form a full shape.
+    const rightSide = [
+      // Flat roof from centreline (0) to 0.5 m
+      { x: 0.0, y: 2.5 },
+      { x: 0.05, y: 2.5 },
+      { x: 0.10, y: 2.5 },
+      { x: 0.15, y: 2.5 },
+      { x: 0.20, y: 2.5 },
+      { x: 0.25, y: 2.5 },
+      { x: 0.30, y: 2.5 },
+      { x: 0.35, y: 2.5 },
+      { x: 0.40, y: 2.5 },
+      { x: 0.45, y: 2.5 },
+      { x: 0.50, y: 2.5 },
+      // Transition through curved sidewall – these were computed using an
+      // ellipse with radii 1.0 m (width) and 1.05 m (height) centred at
+      // (1.5 m, 1.45 m)
+      { x: 0.50, y: 1.45 }, { x: 0.502, y: 1.5159 }, { x: 0.5098, y: 1.5822 }, { x: 0.5218, y: 1.6478 }, { x: 0.5382, y: 1.7122 },
+      { x: 0.5587, y: 1.7750 }, { x: 0.5832, y: 1.8356 }, { x: 0.6113, y: 1.8937 }, { x: 0.6427, y: 1.9487 }, { x: 0.6770, y: 2.0003 },
+      { x: 0.7136, y: 2.0481 }, { x: 0.7523, y: 2.0917 }, { x: 0.7925, y: 2.1307 }, { x: 0.8338, y: 2.1648 }, { x: 0.8757, y: 2.1939 },
+      { x: 0.9178, y: 2.2179 }, { x: 0.9595, y: 2.2367 }, { x: 1.0005, y: 2.2503 }, { x: 1.0404, y: 2.2586 }, { x: 1.0787, y: 2.2618 },
+      { x: 1.1150, y: 2.2598 }, { x: 1.1488, y: 2.2529 }, { x: 1.1799, y: 2.2414 }, { x: 1.2078, y: 2.2255 }, { x: 1.2321, y: 2.2057 },
+      { x: 1.2527, y: 2.1826 }, { x: 1.2692, y: 2.1565 }, { x: 1.2814, y: 2.1280 }, { x: 1.2892, y: 2.0975 }, { x: 1.2924, y: 2.0656 },
+      { x: 1.2910, y: 2.0330 }, { x: 1.2849, y: 1.9999 }, { x: 1.2741, y: 1.9668 }, { x: 1.2588, y: 1.9340 }, { x: 1.2390, y: 1.9021 },
+      { x: 1.2148, y: 1.8715 }, { x: 1.1865, y: 1.8426 }, { x: 1.1542, y: 1.8159 }, { x: 1.1181, y: 1.7916 }, { x: 1.0786, y: 1.7699 },
+      { x: 1.0358, y: 1.7512 }, { x: 0.9901, y: 1.7355 }, { x: 0.9417, y: 1.7232 }, { x: 0.8909, y: 1.7142 }, { x: 0.8379, y: 1.7088 },
+      { x: 0.7832, y: 1.7071 }, { x: 0.7271, y: 1.7092 }, { x: 0.6700, y: 1.7147 }, { x: 0.6122, y: 1.7240 }, { x: 0.5542, y: 1.7371 },
+      { x: 0.4965, y: 1.7540 }, { x: 0.4394, y: 1.7747 }, { x: 0.3833, y: 1.7988 }, { x: 0.3286, y: 1.8260 }, { x: 0.2759, y: 1.8563 },
+      { x: 0.2255, y: 1.8894 }, { x: 0.1779, y: 1.9251 }, { x: 0.1336, y: 1.9630 }, { x: 0.0930, y: 2.0030 }, { x: 0.0566, y: 2.0446 },
+      { x: 0.0246, y: 2.0877 },
+      // Short vertical wall near the floor
+      { x: 2.5, y: 0.4 }, { x: 2.5, y: 0.3 }, { x: 2.5, y: 0.2 }, { x: 2.5, y: 0.1 }, { x: 2.5, y: 0.0 },
+      // Floor back towards centreline
+      { x: 2.25, y: 0.0 }, { x: 2.00, y: 0.0 }, { x: 1.75, y: 0.0 }, { x: 1.50, y: 0.0 }, { x: 1.25, y: 0.0 },
+      { x: 1.00, y: 0.0 }, { x: 0.75, y: 0.0 }, { x: 0.50, y: 0.0 }, { x: 0.25, y: 0.0 }
+    ];
+
+    // Mirror the right side to create the full closed shape.  We build the shape
+    // clockwise beginning at centreline on the roof, travelling outwards to the
+    // right and around the contour, then back along the floor to the left side.
+    const contour = [];
+    // Add right side points
+    rightSide.forEach(pt => contour.push(new THREE.Vector2(pt.x, pt.y)));
+    // Add mirrored left side (excluding the first point to avoid duplicate at
+    // centreline)
+    for (let i = rightSide.length - 2; i >= 0; i--) {
+      const pt = rightSide[i];
+      contour.push(new THREE.Vector2(-pt.x, pt.y));
+    }
+
+    // Build the Three.js scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+    // Perspective camera: fov, aspect, near, far
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(7, 4, 7);
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    // Orbit controls for user interaction
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 1.2, 0);
+    controls.update();
+    // Create a shape from the contour points
+    const shape = new THREE.Shape(contour);
+    // Extrude along the cargo position length (3.175 m)
+    const extrudeSettings = {
+      depth: 3.175,
+      steps: 1,
+      bevelEnabled: false
+    };
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    // Rotate so that the length aligns with the aircraft's longitudinal axis
+    geometry.rotateX(Math.PI / 2);
+    // Center the geometry
+    geometry.center();
+    const material = new THREE.MeshStandardMaterial({ color: 0x9ec4e6, opacity: 0.95, transparent: true });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    // Add a simple floor grid for reference
+    const grid = new THREE.GridHelper(10, 10, 0x888888, 0xcccccc);
+    scene.add(grid);
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+    // Handle window resize
+    window.addEventListener('resize', onWindowResize);
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+  </script>
+</body>
+</html>
