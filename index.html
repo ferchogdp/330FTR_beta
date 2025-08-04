@@ -4,9 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A330‑200F Cargo Hold Visualisation</title>
-  <!-- Load Three.js modules via ES module imports.  We import the core
-       Three.js library and the OrbitControls helper from jsDelivr.  This
-       requires a <script type="module"> block below. -->
+  <!-- Define an import map so that modules in the examples folder can
+       resolve the bare specifier 'three'.  Without this map, OrbitControls
+       will try to import 'three' and fail. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js"
+    }
+  }
+  </script>
   <style>
     html, body { height: 100%; margin: 0; }
     canvas { display: block; }
@@ -29,10 +36,9 @@
     This viewer extrudes the cross‑section of the Airbus A330‑200F cargo hold based on the inner contour shown in the provided diagram【472571531897444†L100-L104】.  The half‑width of the cabin is approximately 2.5 m and the maximum height is about 2.5 m.  The roof includes a flat section of 1 m width and the walls transition through a curved segment down to a short vertical side near the floor.  This cross‑section is extruded 3.175 m along the depth, corresponding to a standard 96 × 125 in pallet position【635180404376686†L1072-L1080】.
   </div>
   <script type="module">
-  // Import Three.js and OrbitControls as ES modules.  Without these imports,
-  // the OrbitControls helper won't attach itself to the global THREE namespace
-  // and you'll see errors like "THREE.OrbitControls is not a constructor".
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js';
+  // Import Three.js and OrbitControls via module specifiers.  Because of the
+  // import map defined in the <head>, 'three' resolves to the module URL.
+  import * as THREE from 'three';
   import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/controls/OrbitControls.js';
 
   (function() {
