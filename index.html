@@ -61,8 +61,7 @@
     const shape = new THREE.Shape(contour);
     const extrudeSettings = { depth: 3.175, steps: 1, bevelEnabled: false };
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    // Rotate so the extrusion runs along the aircraft's longitudinal axis
-    geometry.rotateX(Math.PI / 2);
+    // Center the geometry so that it is roughly around the origin
     geometry.center();
     const material = new THREE.MeshStandardMaterial({ color: 0x9ec4e6, opacity: 0.95, transparent: true });
     const mesh = new THREE.Mesh(geometry, material);
